@@ -571,6 +571,8 @@ public class PostEntity {
 ```
 
 ## 4. 실전 적용/느낀 점 (Usage & Insights)
+- [연관 이슈](https://github.com/Sunwoo0110/Bookdam-backend/issues/4)
+- [연관 PR](https://github.com/Sunwoo0110/Bookdam-backend/pull/5)
 - 공부하다가 울뻔.... ｡°꒰ ՞ ´ ᗣ`°꒱°｡
 - 그냥.. 여태 내가 얼마나 고민없이 설계하고 개발했는지 느낄 수 있는 시간이였삼...
 

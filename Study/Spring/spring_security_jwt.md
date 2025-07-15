@@ -68,6 +68,7 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
 
 ## 4. 실전 적용/느낀 점 (Usage & Insights)
 - [연관 이슈](https://github.com/Sunwoo0110/Bookdam-backend/issues/1)
+- [연관 PR](https://github.com/Sunwoo0110/Bookdam-backend/pull/2)
   - JwtAuthenticationFilter, JwtTokenProvider 개발
   - 사실 spring 에서 jwt 관리하는 방식이 어느정도 규격화가 되어 큰 고민 없이 개발한 적이 많았던 것 같은데... 이번 기회에 공부 하면서 어떤 방식으로 작동하는 지 배워서 뿌듯했다😙
 
