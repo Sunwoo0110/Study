@@ -7,13 +7,18 @@
 
 - [Study](#study)
   - [📑 목차](#-목차)
-  - [🖥️ OS](#️-os)
-  - [🌱 Spring](#-spring)
+  - [📚 Study](#-study)
+    - [🖥️ OS](#️-os)
+    - [🌱 Spring](#-spring)
   - [🐞 Troubleshooting](#-troubleshooting)
+    - [📂 Spring](#-spring-1)
+    - [📂 Algorithm](#-algorithm)
 
 ---
 
-## 🖥️ OS
+## 📚 Study
+
+### 🖥️ OS
 
 | 파일 | 설명 |
 | --- | --- |
@@ -21,7 +26,7 @@
 
 ---
 
-## 🌱 Spring
+### 🌱 Spring
 
 | 파일 | 설명 |
 | --- | --- |
@@ -34,10 +39,17 @@
 
 ## 🐞 Troubleshooting
 
+### 📂 Spring
+
 | 파일 | 설명 |
 | --- | --- |
-| | |
+| |  |
 
----
+### 📂 Algorithm
+
+| 파일 | 설명 |
+| --- | --- |
+|[long_type.md](Troubleshooting/Algorithm/long_type.md)| Long 타입 vs Integer 타입|
+
 
 
