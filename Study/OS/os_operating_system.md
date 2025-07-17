@@ -29,12 +29,11 @@
 
 ---
 
-
 ## 3. 참고/추가 자료 (References)
 - [인프런 운영체제 공룡책 강의](https://www.inflearn.com/course/%EC%9A%B4%EC%98%81%EC%B2%B4%EC%A0%9C-%EA%B3%B5%EB%A3%A1%EC%B1%85-%EC%A0%84%EA%B3%B5%EA%B0%95%EC%9D%98)
 
 ---
 
-## 6. 내일/다음에 볼 것 (Next Steps)
+## 4. 내일/다음에 볼 것 (Next Steps)
 - Process 공부하자~~ (;´Д`)
 
