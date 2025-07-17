@@ -23,6 +23,7 @@
 | 파일 | 설명 |
 | --- | --- |
 | [os_operating_system.md](Study/OS/os_operating_system.md) | 운영체제 기본 개념 정리 |
+| [os_process.md](Study/OS/os_procss.md) | 프로세스 개념 및 프로세스 간의 통신 방법 정리 |
 
 ---
 
