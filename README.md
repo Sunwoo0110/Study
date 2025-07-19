@@ -30,11 +30,12 @@
 ### 🌱 Spring
 
 | 파일 | 설명 |
-| --- | --- |
-| [spring_annotation.md](Study/Spring/spring_annotation.md) | Spring 주요 Annotation 개념/예제 정리 |
-| [spring_entity.md](Study/Spring/spring_entity.md) | Entity 설계 시 주요 내용 정리 |
+| --- | --------- |
+| [spring_entity.md](Study/Spring/spring_entity.md) | Entity 개념 및 설계 시 중요한 내용 정리 |
+| [spring_dto.md](Study/Spring/spring_dto.md) | DTO 개념 및 설계 시 중요한 내용 정리 |
 | [spring_java_class.md](Study/Spring/spring_java_class.md) | Java Class 구조 및 특징 |
 | [spring_security_jwt.md](Study/Spring/spring_security_jwt.md) | Spring Security + JWT 인증 구현/이론 |
+| [spring_annotation.md](Study/Spring/spring_annotation.md) | Spring 주요 Annotation 개념/예제 정리 |
 
 ---
 
