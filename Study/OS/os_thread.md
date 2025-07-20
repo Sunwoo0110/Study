@@ -1,4 +1,4 @@
-# 📚 Process
+# 📚 Thread
 
 ---
 
