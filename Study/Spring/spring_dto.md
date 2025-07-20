@@ -257,8 +257,8 @@ public class BookSearchReqDto {
 ---
 
 ## 4. 실전 적용/느낀 점 (Usage & Insights)
-- [연관 이슈]()
-- [연관 PR]()
+- Issue: [[FEATURE] Book API 개발](https://github.com/Sunwoo0110/Bookdam-backend/issues/6)
+- PR: [Feature/#6 book api](https://github.com/Sunwoo0110/Bookdam-backend/pull/8)
 - 소프트웨어공학개론에서 배웠던 재사용성, 유지보수, 테스트용이성, 안정성 이런 부분이 실제 설계에서 얼마나 중요한 지 알게 되었다... 나름대로 정말 사소한 부분 하나 하나 많이 고민해서 설계해봤는데.. 너무 힘들다!! 그리고 너무 오래 걸린다!! 하하
 
 ---
