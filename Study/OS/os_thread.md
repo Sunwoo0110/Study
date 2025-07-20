@@ -12,7 +12,7 @@
 - 가벼운 버전의 프로세스 -> 프로세스 내 실행 흐름의 최소 단위 (lightweight process라고도 부름)
 - CPU에서 스케줄되는(실행되는) 단위
 - **각 스레드는 stack/register set/program counter을 갖고, 같은 프로세스의 코드, 데이터, 힙 등은 공유**
-<img src="image/thread/1.png" alt="설명" width="500"/>
+    <img src="image/thread/1.png" alt="설명" width="500"/>
 - 싱태(State)
   - New: 생성됨 (start 전)
   - Runnable: 실행 가능, 스케줄러 대기 중
