@@ -25,7 +25,7 @@
 ### User Thread vs Kernel Thread
 - User Thread
   - 커널(운영체제) 관여 없이, 사용자 레벨에서 직접 관리되는 스레드
-  - OS는 “스레드 존재” 자체를 모를 수도 있음 (쓰레드 라이브러리가 직접 스케줄링)
+  - OS는 스레드 존재 자체를 모를 수도 있음 (스레드 라이브러리가 직접 스케줄링)
   - 문제: 한 user thread가 block되면(예: I/O), 전체 process가 block될 수 있음
 
 - Kernel Thread
