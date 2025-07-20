@@ -45,7 +45,7 @@
 
 | 파일 | 설명 |
 | --- | --- |
-| |  |
+|[type_unboxing.md](Troubleshooting/Spring/type_unboxing.md)| NPE 발생: 타입 언박싱 오류|
 
 ### 📂 Algorithm
 

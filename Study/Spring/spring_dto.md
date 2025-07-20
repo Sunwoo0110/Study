@@ -62,7 +62,7 @@
 - 그러면 반대로 왜 **Request DTO는 Mutable** 로 설계하는 경우가 많을까?
   1. Jackson 바인딩 편의: 기본 생성자와 Setter가 필요
        - Spring MVC는 JSON을 객체로 바꿀 때 기본 생성자로 빈 DTO 인스턴스를 만들고 setXxx() 메서드로 하나씩 필드를 채움
-  2. Valid 검증: DTO가 mutable해야 빈 DTO -> Setter로 값 채움 -> 검증 순서가 이루어짐. 즉, Setter가 없으면 검증 단계로 넘어갈 수도 없음
+  2. **Valid 검증**: DTO가 mutable해야 빈 DTO -> Setter로 값 채움 -> 검증 순서가 이루어짐. 즉, Setter가 없으면 검증 단계로 넘어갈 수도 없음. (Request DTO에는 검증을 위한 `@NotNull`, `@Size`, `@Pattern` 등의 annotation을 사용)
   3. 유연성 및 단계적 바인딩: API 요청에서 여러 소스(path 변수, 쿼리 파라미터, 바디 등)에서 오는 경우, 차례대로 바인딩 되는 경우가 있음. 이 때, Mutable 해야 컨트롤러가 호출될 때 프레임워크가 알아서 바인딩해줌(setXxx 를 여러 번 각각 호출)
 
 * 어노테이션 정리
@@ -161,7 +161,8 @@ public class UserCreateDto {
 
 
 - 장단점이 명확해서 보통 팀 스타일에 맞춰 작성한다고 함
-- 나의 경우에는 **DTO Getter 오버라이드** 로 작성 (서비스에서 까먹고 빼먹을거 같아서..)
+- ~~나의 경우에는 **DTO Getter 오버라이드** 로 작성 (서비스에서 까먹고 빼먹을거 같아서..)~~
+- DTO 설계 원칙 지키려고 **서비스 내 Null 체크**로 변경
 
 --- 
 
