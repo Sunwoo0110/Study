@@ -25,6 +25,7 @@
 | [os_operating_system.md](Study/OS/os_operating_system.md) | 운영체제 기본 개념 |
 | [os_process.md](Study/OS/os_process.md) | 프로세스 개념 및 프로세스 간의 통신 방법 |
 | [os_thread.md](Study/OS/os_thread.md) | 스레드 개념 및 멀티스레드 장단점 |
+| [os_cpu_scheduling.md](Study/OS/os_cpu_scheduling.md) | CPU 스케줄링 개념과 종류 |
 
 ---
 

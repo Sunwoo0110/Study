@@ -44,7 +44,7 @@
   - Wait Queue: 이벤트(I/O, 신호 등)를 기다리는 프로세스 목록
   - <img src="image/process/4.png" alt="설명" width="400"/>
 - **Context Switch**
-  - 현재 실행중인 프로세스의 **context(상태)**를 PCB에 저장
+  - 현재 실행중인 프로세스의 **context**(상태)를 PCB에 저장
   - 다른 프로세스의 context를 PCB에서 불러와서 CPU 실행을 전환
   - 즉, 프로세스 간에 CPU를 바꿔주는 핵심 기술!
 
