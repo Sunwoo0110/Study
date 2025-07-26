@@ -268,9 +268,101 @@ Setter 의 문제점?
 ### 6. 연관관계 설계 (단방향/양방향/ManyToMany)
 
 #### 단방향을 기본으로, 양방향은 진짜 필요할 때만
-
 - 단방향이 훨씬 단순(코드/쿼리/구조/유지보수 용이)
-- 양방향은 무한루프(StackOverflow), 순환참조, 직렬화 등 문제
+- 따라서 기본적으로 `@ManyToOne`을 설정하고, 필요에 따라 `@OneToMany` 추가
+- 그럼 언제 `@OneToMany`를 추가할까?
+  - 부모 -> 자식 컬렉션 탐색이 자주 필요할 때
+  - Aggregate에서 부모만 건드려도 자식 전체를 생성, 삭제, 갱신해야 할 때(cascade)
+  - 비즈니스 로직 상 부모 기준으로 자식 일괄 처리(예: 화면 렌더링, 일괄 삭제 등)가 잦을 때
+- 양방향 설정 시 어떻게 해야 안전할까??
+  - **LAZY 로딩 유지**
+    - 불필요한 쿼리 방지, 필요한 순간만 JOIN FETCH 등으로 로딩
+  - **페이징 분리**
+    - 자식이 많으면(보통 컬랙션 100개 이상일 시) findByParentId(Pageable) 같은 전용 페이징 API 사용
+  - **순환참조 차단**
+    - toString(), JSON 직렬화 시 @JsonIgnore, @JsonBackReference 등 적용
+  - **배치 Fetch 최적화**
+    - @BatchSize, @Fetch(SUBSELECT) 등으로 한꺼번에 묶어 조회
+    - N+1 문제를 완화하기 위해 연관 엔티티를 **한 번에 묶어서** 가져오는 기법
+    - N+1 문제란?
+      ```java
+      // 1. User 10건 조회
+      List<User> users = em.createQuery("SELECT u FROM User u", User.class).getResultList();
+
+      // 2. 각 User에 매핑된 posts를 호출 -> LAZY 로딩
+      for (User u : users) {
+          u.getPosts().size(); // User마다 추가 쿼리 실행
+          // 총 1(users 조회) + 10(10개의 user에 대해 추가 쿼리) = 11번!
+      }
+      ```
+    - User 10건에 대해 `posts`를 꺼낼 때마다 추가 SELECT... -> 쿼리 호출이 늘어나 성능 저하
+    - 즉, 컬렉션 수(N)에 비례해서 추가 쿼리가 N번 더 나감!
+    - 해결 방법
+      - `@BatchSize`
+        - Hibernate가 여러 프록시를 모아서 한 SQL `IN (…)` 절로 한꺼번에 로딩
+        ```java
+        @Entity
+        public class User {
+          @OneToMany(mappedBy="user", fetch=LAZY)
+          @BatchSize(size = 20)  // posts 컬렉션을 로딩할 때 한 번에 20개씩
+          private List<Post> posts = new ArrayList<>();
+          …
+        }
+        ```
+        - 만약, 코드에서 `users.get(0).getPosts()` 를 처음 호출하면, Hibernate는 아직 초기화되지 않은(=프록시 상태인) posts 컬렉션이 posts를 참조하는 User 인스턴스들 중 몇 개나 모였는지를 확인
+        - 말이 좀 어려운데, 걍 아직 한 번도 posts를 불러오지 않은 User 객체가 지금 몇 명 있지? 확인하고 한 번에 처리
+        - 예시에서는 User 인스턴스가 총 10개 있으니, size=20인 배치 한 번에 10개 프록시 전부를 처리할 수 있음
+        - 한번에 `SELECT * FROM post WHERE user_id IN (u1, u2, …, u10)` 실행
+        - 따라서 User 10건에 대해 `posts`를 가져올 때, 최대 `ceil(10/20)=1`개의 쿼리로 처리
+        - 만약 User 30건이면 `ceil(30/20)=2`개의 쿼리
+        - 너무 크게 잡으면 IN 절 길어져 오히려 느려질 수 있음
+        - 컬렉션마다, 엔티티마다 개별 튜닝 가능
+      - `@Fetch(FetchMode.SUBSELECT)`
+        - 메인 쿼리의 결과를 **서브쿼리**로 한 번에 처리
+          ```java
+          @Entity
+          public class User {
+            @OneToMany(mappedBy="user", fetch=LAZY)
+            @Fetch(FetchMode.SUBSELECT)
+            private List<Post> posts = new ArrayList<>();
+          }
+          ```
+          - `SELECT u.* FROM user u` 로 User 10건 조회하고
+          - `u.getPosts()` 처음 호출 시점에 user_id에 매핑되는 post의 모든 컬렉션을 가져옴
+          - 이때, 메인 쿼리에서 이미 뽑은 User ID 리스트를 `IN (…서브쿼리…)` 로 재활용
+            ```sql
+            SELECT p.* 
+            FROM post p 
+            WHERE p.user_id IN (
+              SELECT u.id FROM user u 
+            )
+            ```
+          - 따라서 N개의 부모 엔티티에 대응하는 자식 엔티티 전체를 한번에 가져옴
+          - 전체 부모 리스트를 한 번에 처리하는 시나리오에 최적
+
+---
+
+#### 여기서 잠깐!! 내가 궁금해서 찾아보는 Aggregate의 정의
+- **서로 밀접하게 연관된 객체(Entity 등)들을 하나의 단위(트랜잭션 등)로 묶은 것**
+- Aggregate Root: Aggregate 전체를 대표하는 루트
+  - 외부에서 이 루트를 통해서만 Aggregate 내부 객체에 접근, 수정 가능
+  - 트랜잭션 경계도 이 루트 기준으로 잡음
+- **일관성 유지**
+  - 복잡한 참조를 한 곳에서 통제 -> 비즈니스 불변식(invariant)을 보장
+- **트랜잭션 경계 단순화**
+  - Aggregate Root만 save()/delete() 하면 내부 객체까지 일괄 처리 가능
+- **모델 캡슐화**
+  - Aggregate 밖에서는 내부 구현(Child 엔티티) 대신 루트 아이디만 참조 -> 결합도 낮춤
+- 설계 규칙
+  - 외부 참조는 항상 Aggregate Root만 -> 내부 엔티티는 ID로만 연결
+  - 작업 단위(create/update/delete)는 루트를 통해 수행
+  - 불변식 검사(invariant)는 루트 메서드 안에서만
+  - Aggregate 크기는 작게 유지 -> 지나치게 큰 컬렉션 지양
+  - 동시성 시에도 루트 수준 Lock/버전 관리
+
+---
+
+#### 양방향의 무한루프(StackOverflow), 순환참조, 직렬화 문제
 - 만약, Post.user, User.posts 모두 건다고 가정해보자!!
 - **무한루프(StackOverflow) 문제**
   - `@ToString`, `@EqualsAndHashCode`, 또는 Jackson 등으로 객체를 문자열/JSON으로 변환할 때
@@ -434,21 +526,41 @@ Setter 의 문제점?
 
 ---
 
+
+### 17. 모든 연관관계는 `LAZY` 로딩으로 설정하자
+- JPA의 기본(`EAGER`)의  즉시로딩은 어떤 SQL이, 언제 실행될지 예측이 어렵고, 특히 컬렉션이 많거나 `JPQL`을 쓸 때 “N+1” 과다 쿼리 문제가 자주 터짐
+- 따라서 `@OneToOne`, `@ManyToOne` 관계에도 `fetch = FetchType.LAZY`를 꼭 명시하고, 실제로 함께 꺼내고 싶을 때만 `SELECT … JOIN FETCH` 같은 **FETCH JOIN** 으로 제어
+
+---
+
+### 18. 컬렉션 필드는 선언 시 빈 컬렉션으로 초기화해야 NPE 없다
+
+```java
+@OneToMany(mappedBy="orders", fetch=FetchType.LAZY)
+private List<Order> orders = new ArrayList<>();
+```
+- 엔티티를 새로 만들었을 때(영속화 전) `orders`가 `null` 이면 `getOrders().add(...)` 할 때 곧바로 NPE 문제 발생
+- 따라서 선언 시 `new ArrayList<>()` 로 초기화하면, 항상 빈 리스트가 들어 있으므로 NPE 안전
+- 그리고 엔티티가 **영속화**(persist/find) 되면 Hibernate가 `ArrayList`를 내부 `PersistentBag`(지연 로딩, dirty checking 지원)로 **교체**하는데, 이때 `setOrders(...)` 등으로 컬렉션 객체 자체를 바꿔 버리면 Hibernate가 제공하는 지연로딩, 더티 체킹 메커니즘이 깨질 수 있음
+- 그래서 항상 `orders.add(x)`, `orders.remove(x)` 같은 메서드로만 요소를 조작하고 컬렉션 참조 자체는 놔두는 게 안전
+
+---
+
 ### 아직 적용안한 항목들...(◞‸◟；)
 
-### 17. Auditing 자동화
+### 19. Auditing 자동화
 - 엔티티의 생성일, 수정일, 삭제일(soft delete) 등은 JPA Auditing 기능 적극 활용
 - @CreatedDate, @LastModifiedDate, @EntityListeners(AuditingEntityListener.class)로 구현
 - 날짜 관련 코드 반복 없이, 모든 엔티티에 공통 베이스 엔티티로 자동화
 - 삭제시에도 "진짜 delete" 대신 isDeleted(soft delete) + deletedAt 필드로 관리하면 복구, 로깅, 감사 추적 가능
 
-### 18. 불변 객체(Immutable Entity) 원칙
+### 20. 불변 객체(Immutable Entity) 원칙
 - 상태 변화가 없는 필드는 ``final``로 선언, 생성자에서만 값 할당
   - setter 최소화, 가능하면 아예 금지
   - 사이드이펙트 및 예상치 못한 값으로의 변경 방지
   - 특히 엔티티 내 변경 불가 값(이메일, 가입일 등)에 적용
 
-### 19. Test Fixture(엔티티 생성 헬퍼) 분리
+### 21. Test Fixture(엔티티 생성 헬퍼) 분리
 - 테스트 코드에서 @Builder/생성자 직접 호출로 엔티티 생성 남발 금지
   - 실제 프로덕션 코드와 동일한 정규화/유효성 검증, 필수 값 세팅 등 일관성 깨질 수 있음
   - 별도의 Fixture/Factory/Helper 클래스로 표준화된 엔티티 생성 메서드를 제공
@@ -579,6 +691,7 @@ public class PostEntity {
 ---
 
 ## 5. 참고/추가 자료 (References)
+- 티스토리, 벨로그 감사합니다
 - 코드 작성하고 문제 상황 고민하고 GPT 한테 물어봄
 
 ---
