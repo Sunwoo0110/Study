@@ -8,6 +8,7 @@
 - [Study](#study)
   - [📑 목차](#-목차)
   - [📚 Study](#-study)
+    - [⚒️ Backend](#️-backend)
     - [🖥️ OS](#️-os)
     - [🌱 Spring](#-spring)
   - [🐞 Troubleshooting](#-troubleshooting)
@@ -17,6 +18,11 @@
 ---
 
 ## 📚 Study
+
+### ⚒️ Backend
+| 파일 | 설명 |
+| --- | --- |
+| [backend_mvc_pattern.md](Study/backend/backend_mvc_pattern.md) | MVC 패턴의 개념 및 장단점과 Spring에서의 작동 방식 |
 
 ### 🖥️ OS
 
