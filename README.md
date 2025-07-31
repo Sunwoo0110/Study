@@ -34,8 +34,6 @@
 | [os_cpu_scheduling.md](Study/OS/os_cpu_scheduling.md) | CPU 스케줄링 개념과 종류 |
 | [os_synchronization.md](Study/OS/os_synchronization.md) | 경쟁 상태와 동기화 기법 종류 |
 
----
-
 ### 🌱 Spring
 
 | 파일 | 설명 |
@@ -54,13 +52,14 @@
 
 | 파일 | 설명 |
 | --- | --- |
-|[type_unboxing.md](Troubleshooting/Spring/type_unboxing.md)| NPE 발생: 타입 언박싱 오류|
+|[Java에서_Integer와_int_차이.md](Troubleshooting/Spring/Java에서_Integer와_int_차이.md)| Java에서 기본형과 참조형의 차이 |
+|[type_unboxing.md](Troubleshooting/Spring/type_unboxing.md)| NPE 발생: 타입 언박싱 오류 |
 
 ### 📂 Algorithm
 
 | 파일 | 설명 |
 | --- | --- |
-|[long_type.md](Troubleshooting/Algorithm/long_type.md)| Long 타입 vs Integer 타입|
+|[Long_type.md](Troubleshooting/Algorithm/Long_type.md)| Long 타입 vs Integer 타입|
 
 
 
