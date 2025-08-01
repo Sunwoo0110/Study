@@ -12,8 +12,6 @@
     - [🖥️ OS](#️-os)
     - [🌱 Spring](#-spring)
   - [🐞 Troubleshooting](#-troubleshooting)
-    - [📂 Spring](#-spring-1)
-    - [📂 Algorithm](#-algorithm)
 
 ---
 
@@ -49,18 +47,11 @@
 
 ## 🐞 Troubleshooting
 
-### 📂 Spring
-
-| 파일 | 설명 |
-| --- | --- |
-|[Java에서_Integer와_int_차이.md](Troubleshooting/Spring/Java에서_Integer와_int_차이.md)| Java에서 기본형과 참조형의 차이 |
-|[type_unboxing.md](Troubleshooting/Spring/type_unboxing.md)| NPE 발생: 타입 언박싱 오류 |
-
-### 📂 Algorithm
-
-| 파일 | 설명 |
-| --- | --- |
-|[Long_type.md](Troubleshooting/Algorithm/Long_type.md)| Long 타입 vs Int 타입|
+| 파일 | 설명 | 종류 |
+| --- | ------------- | --- |
+|[Java에서_Integer와_int_차이.md](Troubleshooting/Java에서_Integer와_int_차이.md)| Java에서 기본형과 참조형의 차이 | Java |
+|[Spring_type_unboxing.md](Troubleshooting/Spring_type_unboxing.md)| NPE 발생: 타입 언박싱 오류 | Spring |
+|[Long_type.md](Troubleshooting/Long_type.md)| Long 타입 vs Int 타입| Algorithm |
 
 
 
