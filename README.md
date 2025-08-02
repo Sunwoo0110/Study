@@ -20,8 +20,8 @@
 ### ⚒️ Backend
 | 파일 | 설명 |
 | --- | --- |
-| [backend_mvc_pattern.md](Study/backend/backend_mvc_pattern.md) | MVC 패턴의 개념 및 장단점과 Spring에서의 작동 방식 |
-| [backend_cache.md](Study/backend/backend_cache.md) | cache의 개념과 전략, eviction 방법, 개발 시 고민 사항 |
+| [backend_mvc_pattern.md](Study/Backend/backend_mvc_pattern.md) | MVC 패턴의 개념 및 장단점과 Spring에서의 작동 방식 |
+| [backend_cache.md](Study/Backend/backend_cache.md) | cache의 개념과 전략, eviction 방법, 개발 시 고민 사항 |
 
 ### 🖥️ OS
 
