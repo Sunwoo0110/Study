@@ -33,6 +33,7 @@
 | [os_cpu_scheduling.md](Study/OS/os_cpu_scheduling.md) | CPU 스케줄링 개념과 종류 |
 | [os_synchronization.md](Study/OS/os_synchronization.md) | 경쟁 상태와 동기화 기법 종류 |
 | [os_deadlock.md](Study/OS/os_deadlock.md) | 데드락의 발생 조건과 방지, 회피, 감지 방법  |
+| [os_main_memory.md](Study/OS/os_main_memory.md) | 메모리 할당 방식과 페이징 기반 주소 변환 |
 
 ### 🌱 Spring
 
