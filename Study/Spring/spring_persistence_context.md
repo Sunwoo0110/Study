@@ -87,6 +87,46 @@
 
 ---
 
+### Lazy Loading 과 Persistence Context 관계
+- **Lazy Loading이 동작하려면 영속성 컨텍스트가 살아 있어야 함**
+  -  프록시 객체는 나중에 DB에서 조회해야지~~ 라는 위임 코드를 가지고 있음(쉽게 말해서 내가 진짜 데이터는 없으니까(프록시니까) 너가 필요하면 영속성 컨텍스트에게 DB 쿼리 날려서 가져와 달라고 부탁할게~ )
+  -  따라서 실제 DB 접근하려면 JPA가 영속성 컨텍스트(EntityManager)를 통해 SQL을 날려야 함
+- 그러면 만약 트랜잭션이 끝나서 영속성 컨텍스트가 닫히면?
+  - Lazy Loading 시도 시 DB 연결할 수 없음! -> **`LazyInitializationException` 발생**
+```
+트랜잭션 시작
+-> User 엔티티 조회 (role = 프록시)
+-> 영속성 컨텍스트 살아있음
+-> user.getRole() 호출 시 프록시가 영속성 컨텍스트 통해 DB 조회
+-> Role 엔티티 리스트 반환
+
+트랜잭션 종료
+-> 영속성 컨텍스트 닫힘
+-> user.getRole() 호출하면 DB 접근 불가
+-> LazyInitializationException 발생!!!
+```
+
+- 여기서 잠깐!
+- 벌써 몇번째 정리하는 지도 모르겠는! (맨날 까먹어ㅜㅠ 아놔~)
+- Lazy Loading이란?
+  -  실제로 객체(연관된 엔티티)의 데이터가 **필요할 때까지 DB 조회를 미루는 기법**
+  -  JPA에서는 `@OneToMany`, `@ManyToOne` 관계를 맺을 때 기본이 `LAZY` 전략!
+  -  즉, 처음에는 프록시 객체(가짜 껍데기)만 두고 있다가, 실제 접근(`getRole()`) 시점에 DB 쿼리 날림
+      ```java
+      @Entity
+      public class User {
+         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // 지연 로딩
+         private List<Order> orders;
+      }
+      ```
+      ```java
+      User user = em.find(User.class, 1L);
+      // 이 시점에는 orders는 "프록시 객체"만 존재 (쿼리 안 날라감)
+
+      List<Order> orders = user.getOrders(); 
+      // 실제 getOrders() 호출 시점에! SELECT 쿼리 실행 -> 이 때 orders 테이블에서 조회
+      ```
+
 ## 3. 코드 예시
 
 ```java
