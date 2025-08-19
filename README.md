@@ -22,7 +22,7 @@
 | 파일 | 설명 |
 | --- | --- |
 | [backend_mvc_pattern.md](Study/Backend/backend_mvc_pattern.md) | MVC 패턴의 개념 및 장단점과 Spring에서의 작동 방식 |
-| [backend_cache.md](Study/Backend/backend_cache.md) | cache의 개념과 전략, eviction 방법, 개발 시 고민 사항 |
+| [backend_cache.md](Study/Backend/backend_cache.md) | cache의 개념과 전략, eviction 방법, 개발 시 고민 사항, redis의 영속성, 원자성 보장, 분산락 정리 |
 | [backend_scaleout.md](Study/Backend/backend_scaleout.md) | 시스템 규모 확장을 위한 기법 정리 |
 
 ### 💾 DB
