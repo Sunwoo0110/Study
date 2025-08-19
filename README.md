@@ -9,6 +9,7 @@
   - [📑 목차](#-목차)
   - [📚 Study](#-study)
     - [⚒️ Backend](#️-backend)
+    - [💾 DB](#-db)
     - [🖥️ OS](#️-os)
     - [🌱 Spring](#-spring)
   - [🐞 Troubleshooting](#-troubleshooting)
@@ -23,7 +24,12 @@
 | [backend_mvc_pattern.md](Study/Backend/backend_mvc_pattern.md) | MVC 패턴의 개념 및 장단점과 Spring에서의 작동 방식 |
 | [backend_cache.md](Study/Backend/backend_cache.md) | cache의 개념과 전략, eviction 방법, 개발 시 고민 사항 |
 | [backend_scaleout.md](Study/Backend/backend_scaleout.md) | 시스템 규모 확장을 위한 기법 정리 |
-| [backend_transaction.md](Study/Backend/backend_transaction.md) | MySQL의 Lock, Transaction, Isolation level, InnoDB 정리 |
+
+### 💾 DB
+
+| 파일 | 설명 |
+| --- | --- |
+| [DB_transaction.md](Study/DB/DB_transaction.md) | MySQL의 Lock, Transaction, Isolation level, Propagation, Spring의 `Transactional` 정리 |
 
 ### 🖥️ OS
 
@@ -44,8 +50,10 @@
 | --- | --------- |
 | [spring_entity.md](Study/Spring/spring_entity.md) | Entity 개념 및 설계 시 주의점 |
 | [spring_dto.md](Study/Spring/spring_dto.md) | DTO 개념 및 설계 시 주의점 |
+| [spring_persistence_context.md](Study/Spring/spring_persistence_context.md) | 스프링 영속성 컨텍스트의 개념과 역할 |
 | [spring_java_class.md](Study/Spring/spring_java_class.md) | Java Class 구조 및 특징 |
 | [spring_security_jwt.md](Study/Spring/spring_security_jwt.md) | Spring Security + JWT 인증 구현/이론 |
+| [spring_bean.md](Study/Spring/spring_bean.md) | Spring container와 bean 개념, 생명주기 |
 | [spring_annotation.md](Study/Spring/spring_annotation.md) | Spring 주요 Annotation 개념/예제 정리 |
 
 ---
@@ -57,6 +65,3 @@
 |[Java에서_Integer와_int_차이.md](Troubleshooting/Java에서_Integer와_int_차이.md)| Java에서 기본형과 참조형의 차이 | Java |
 |[Spring_type_unboxing.md](Troubleshooting/Spring_type_unboxing.md)| NPE 발생: 타입 언박싱 오류 | Spring |
 |[Long_type.md](Troubleshooting/Long_type.md)| Long 타입 vs Int 타입| Algorithm |
-
-
-

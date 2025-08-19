@@ -204,6 +204,198 @@
 | Crash Recovery | robust        | 취약                |
 | 기본 엔진          | MySQL 5.5 이후  | MySQL 5.5 이전      |
 
+---
+
+### Propagation (트랜잭션 전파)
+- 트랜잭션 안에서 다른 `@Transactional` 메서드를 호출했을 때, 기존 트랜잭션에 참여할지, 새로 만들지, 끊을지를 결정하는 정책
+- **REQUIRED (기본값)**: 기존 있으면 참여, 없으면 새로 시작 (가장 많이 씀)
+- **REQUIRES NEW**: 무조건 새로 시작, 기존 트랜잭션은 잠시 중단 (로그/이력 저장에 활용)
+- **SUPPORTS**: 있으면 참여, 없으면 트랜잭션 없이 실행
+- **MANDATORY**: 기존 트랜잭션이 반드시 있어야 함, 없으면 예외
+- **NOT SUPPORTED**: 트랜잭션 중단하고 비트랜잭션으로 실행
+- **NEVER**: 트랜잭션이 있으면 예외 발생
+- **NESTED**: 동일 트랜잭션 안에서 **세이브포인트**를 만들어 부분 롤백 가능 (JDBC 지원 필요)
+
+---
+
+### Spring `@Transactional`
+- 메서드나 클래스 단위로 트랜잭션 경계(시작 -> 커밋/롤백)를 자동으로 관리해주는 스프링의 어노테이션
+- 개발자가 `try-catch`로 직접 `commit/rollback` 하지 않아도 됨 -> **선언형 트랜잭션 관리**
+- 실제론 **스프링 AOP 프록시**가 메서드 호출을 가로채서 트랜잭션을 시작/종료/롤백함
+- 여기서 잠깐!!
+- AOP란? (Aspect Oriented Programming)
+  - 관점 지향 프로그래밍: 핵심 로직(비즈니스 로직)과 **부가 기능(공통 관심사)**을 분리해서 관리하는 방식
+  - ex. 핵심: 주문 결제, 회원 가입, 게시글 작성 / 부가: 로깅, 보안, 트랜잭션, 성능 모니터링
+  - 부가 기능을 직접 코드에 쓰지 않고, **한 곳에 모아 관리하고 실행 시 자동으로 끼워 넣음**!!
+  - 장점
+    - **중복 코드 제거**: 모든 서비스 메서드마다 try-catch로 트랜잭션 시작/종료 → 너무 반복+복잡
+    - **유지보수 용이**: 공통 기능을 따로 관리하면 수정이 쉬움
+    - **관심사의 분리**(SoC): 핵심 로직은 비즈니스에만 집중, 부가 기능은 AOP에서 관리
+
+---
+
+### Self-invocation 문제
+- `@Transactional`은 기본적으로 **프록시 방식**으로 동작
+- 즉, **외부에서 들어오는 메서드 호출**만 가로채서 트랜잭션을 적용
+- **같은 클래스 내부에서 `this.method()`로 호출**하면 프록시를 안 거치므로 트랜잭션이 적용되지 않음 -> **self-invocation 문제**
+- 해결 방법
+  - 자기 자신을 프록시 형태로 주입받아 호출 (`this` 대신 주입받은 자기 자신 `self` 사용)
+  - 트랜잭션을 분리할 메서드를 다른 클래스(Service)로 이동
+  - AspectJ 모드 사용
+
+---
+
+### RollBack 규칙
+- 기본적으로 **`RuntimeException`이나 `Error` 발생 시 롤백**
+- 체크 예외(예: `IOException`)는 기본적으로 롤백 안 함
+- 필요하면 `rollbackFor` / `noRollbackFor` 옵션으로 제어 가능
+
+```java
+@Transactional(rollbackFor = IOException.class)
+public void test(...) { ... }
+```
+
+---
+
+### `readOnly = true`
+- **쓰기 작업이 없는 조회 전용 트랜잭션**에서 사용
+- 장점
+  - JPA/Hibernate는 불필요한 작업(변경 감지, flush 등)을 줄여 **조회 성능을 최적화**
+  - 데이터베이스 드라이버에 읽기 전용 힌트를 전달하기도 함
+- 주의: 무조건 쓰기 금지를 강제하는 건 아니고, 개발자 규율 차원에서 의미가 큼 (DB 마다 다름)
+
+---
+
+### 코드로 알아보는 `@Transactional`!! 와 신난다~~
+
+### 트랜잭션을 이용한 Lazy Loading 문제 해결 (`readOnly = true`)
+  ```java
+  @Override
+  @Transactional(readOnly = true)
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+      UserEntity user = userRepository.findById(Long.valueOf(username))
+                                      .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+
+      // 트랜잭션 시작 -> 트랜잭션 내부에서 role 접근 -> 영속성 컨텍스트가 살아있음 -> LazyInitializationException 방지
+      user.setAuthorities(user.getRoles().stream()
+          .map(role -> new SimpleGrantedAuthority(role.getRole()))
+          .collect(Collectors.toList()));
+
+      return user;
+  }
+  ```
+
+---
+
+### 롤백 확인 (런타임 예외 시 롤백)
+
+```java
+@Service
+public class OrderService {
+    @Transactional
+    public void placeOrder(Long userId, Long productId) {
+        // Order 저장하는 로직
+        orderRepository.save(new Order(userId, productId)); // 아직 커밋 아님(쓰기 지연)
+
+        if (productId == 999L) { // 강제 예외(런타임 예외)
+            // 트랜잭션 인터셉터가 예외를 감지해 트랜잭션을 롤백!!
+            throw new IllegalStateException("재고 부족!");
+        }
+
+        // Payment 저장하는 로직
+        paymentRepository.save(new Payment(userId, productId));
+        // 메서드 정상 종료 -> 커밋 시도
+    }
+}
+```
+- 예외 발생 시 `Order`/`Payment` 모두 롤백됨
+
+
+---
+
+### REQUIRED (기본 전파 속성)
+- 이미 트랜잭션이 있으면 합류(join)하고, 없으면 새로 시작
+```java
+@Service
+public class OrderService {
+    @Transactional // 기본 propagation = REQUIRED
+    public void placeOrder(Long userId, Long productId) {
+        orderRepository.save(new Order(userId, productId));
+        // 어랏! 기존에 실행중인 트랜잭션이 있구나!
+        // 이미 진행 중인 같은 트랜잭션에 합류
+        // 즉! 두 메서드(placeOrder + savePayment)는 한 트랜잭션으로 묶여 실행
+        paymentService.savePayment(userId, productId); // REQUIRED
+    }
+}
+
+@Service
+public class PaymentService {
+    @Transactional // propagation = REQUIRED (기본)
+    public void savePayment(Long userId, Long productId) {
+        paymentRepository.save(new Payment(userId, productId));
+    }
+}
+
+```
+- 예외 발생 시 전체 rollback (Order, Payment 둘 다 취소)
+
+---
+
+### `REQUIRES_NEW` (이력 저장 분리 커밋)
+- 현재 트랜잭션(있다면) 일시 중단 -> 새 물리 트랜잭션을 시작 (보통 다른 DB 커넥션 사용) -> `saveLog()` 실행 후 즉시 커밋/롤백 -> 기존 트랜잭션 재개
+
+```java
+@Service
+public class LogService {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveLog(String message) {
+        systemLogRepository.save(new SystemLog(message));
+    }
+}
+```
+
+```java
+@Service
+public class TestService {
+  private final TestService testService;
+  private final LogService logService;
+
+  @Transactional // 기본 REQUIRED
+  public void test(...) {
+    testService.test(...);           // 기존 트랜잭션
+    logService.saveLog("주문 시도");       // REQUIRES_NEW(분리 커밋)
+    // 여기서 예외가 나면 바깥 트랜잭션은 롤백되지만,
+    // saveLog()는 이미 별도로 커밋 완료!!
+  }
+}
+```
+- 트랜잭션이 실패해도 로그는 **별도 트랜잭션으로 커밋**
+
+---
+
+### Self-invocation 문제 예시 & 해결
+
+```java
+@Service
+public class MemberService {
+
+    private final MemberService self; // 자기 자신 프록시 주입
+
+    public MemberService(MemberService self) {
+        this.self = self;
+    }
+
+    @Transactional
+    public void registerMember() {
+        self.validateMember(); // 프록시를 거쳐 호출 -> 트랜잭션 적용됨
+    }
+
+    @Transactional
+    public void validateMember() {
+        ... 
+    }
+}
+```
 
 ---
 
@@ -211,10 +403,13 @@
 - [MySQL Transaction Isolation Levels](https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html)
 - [MySQL InnoDB Introduction](https://dev.mysql.com/doc/refman/8.4/en/innodb-introduction.html)
 - RealMySQL 8.0
+- [Spring Framework Docs – Transaction Management](https://docs.spring.io/spring-framework/reference/data-access/transaction.html)
+- [Baeldung – Spring @Transactional](https://www.baeldung.com/transaction-configuration-with-jpa-and-spring)
 
 ---
 
 ## 4. 내일/다음에 볼 것 (Next Steps)
 - 진심 너무너무너무 어려워서 반도 이해 못한 것 같음... 
 - 나중에 다시 더 깊게 공부하자... :;(∩´﹏`∩);:
+- 난 진짜 바보다
 
