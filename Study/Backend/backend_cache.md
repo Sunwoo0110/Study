@@ -5,6 +5,31 @@
 ## 1. 주제/키워드 
 - 캐시와 redis에 대해 알아보자!! (つ✧.✧)つ-✧҉*
 
+## 📑 목차
+- [📚 Cache](#-cache)
+  - [1. 주제/키워드](#1-주제키워드)
+  - [📑 목차](#-목차)
+  - [2. 핵심 요약 (Summary)](#2-핵심-요약-summary)
+    - [Cache](#cache)
+    - [Cache Strategy(캐시 전략)](#cache-strategy캐시-전략)
+    - [Cache Eviction(캐시 축출)](#cache-eviction캐시-축출)
+    - [캐시 사용 시 주의할 점](#캐시-사용-시-주의할-점)
+    - [캐시를 사용해도 DB 부하가 발생하는 상황](#캐시를-사용해도-db-부하가-발생하는-상황)
+      - [Cache Stampede (캐시 쇄도)](#cache-stampede-캐시-쇄도)
+      - [Cache Penetration (캐시 관통)](#cache-penetration-캐시-관통)
+      - [캐시 시스템 장애](#캐시-시스템-장애)
+      - [핫키(Hotkey) 만료](#핫키hotkey-만료)
+    - [**Strong consistency**가 필요한 경우(민감 데이터)](#strong-consistency가-필요한-경우민감-데이터)
+    - [Redis (Remote Dictionary Server)](#redis-remote-dictionary-server)
+    - [Redis가 빠른 이유](#redis가-빠른-이유)
+    - [Redis Lock](#redis-lock)
+    - [Redlock (분산 락)](#redlock-분산-락)
+    - [Redis 원자성 보장](#redis-원자성-보장)
+    - [Redis 장애 발생 시 대응 방법](#redis-장애-발생-시-대응-방법)
+    - [Redis를 DB처럼 쓸 때 문제](#redis를-db처럼-쓸-때-문제)
+  - [3. 참고/추가 자료 (References)](#3-참고추가-자료-references)
+  - [4. 내일/다음에 볼 것 (Next Steps)](#4-내일다음에-볼-것-next-steps)
+
 ---
 
 ## 2. 핵심 요약 (Summary)
@@ -131,7 +156,7 @@
 
 ### 캐시를 사용해도 DB 부하가 발생하는 상황
 
-### Cache Stampede (캐시 쇄도)
+#### Cache Stampede (캐시 쇄도)
 - <img src="image/cache/1.png" alt="설명" width="400"/>
 - 동시에 여러 캐시가 만료되어 캐시 미스가 많이 발생하는 경우
 - 캐시가 특정 시간(매일 자정 등)에 만료하게 하는 경우 자주 발생
@@ -140,7 +165,7 @@
   - 따라서 만료 시간에 지터와 같이 0~10초 사이 무작위 지연 시간을 더하면 DB 부담이 10초에 나누어 분산됨(**DB 부하 균등 분산**)
   - 지터가 길어지면 사용자가 그만큼 오래된 데이터를 보는 것이므로, 적절한 시간을 설정해야함
 
-### Cache Penetration (캐시 관통)
+#### Cache Penetration (캐시 관통)
 - <img src="image/cache/2.png" alt="설명" width="400"/>
 - 캐시에서 `null`이면 cache miss라고 판단하여 DB에서 조회하여 값을 채움
 - 하지만 만약, DB 값 자체가 `null`이라면?
@@ -157,7 +182,7 @@
       - 객체 타입: null 대신 값이 없음을 표현할 객체를 선언해서 사용
       - 원시 타입: 특정 값을 지정(ex. 양수 값만 가능할 때 -1 반환)
 
-### 캐시 시스템 장애
+#### 캐시 시스템 장애
 - <img src="image/cache/3.png" alt="설명" width="400"/>
 - 트래픽이 적으면 캐시 시스템에 문제가 생겨도 DB에 트래픽을 보내면 됨
 - 하지만 트래픽이 많은 경우, DB에 과부하가 걸릴 확률이 높음
@@ -165,7 +190,7 @@
   - 반드시 작동해야하는 핵심 기능을 제외하고 부가 기능은 작동 중단
   - 부가 기능 관련해서는 사용자에게 UI 등으로 양해 부탁
 
-### 핫키(Hotkey) 만료
+#### 핫키(Hotkey) 만료
 - <img src="image/cache/4.png" alt="설명" width="400"/>
 - 핫키: 요청이 집중되는 키
 - 핫키가 만료되면 여러 요청이 불필요하게 중복될 가능성 존재
