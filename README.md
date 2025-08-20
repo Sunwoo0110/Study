@@ -29,7 +29,7 @@
 
 | 파일 | 설명 |
 | --- | --- |
-| [DB_transaction.md](Study/DB/DB_transaction.md) | MySQL의 Lock, Transaction, Isolation level, Propagation, Spring의 `Transactional` 정리 |
+| [DB_transaction.md](Study/DB/DB_transaction.md) | MySQL의 Lock, Transaction, Isolation level, Propagation, Spring의 `Transactional`, 분산 환경에서의 보상 트랜잭션 정리 |
 
 ### 🖥️ OS
 
