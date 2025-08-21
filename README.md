@@ -40,6 +40,7 @@
 | 파일 | 설명 |
 | --- | --------- |
 | [spring_entity.md](Study/Spring/spring_entity.md) | Entity 개념 및 설계 시 주의점 |
+| [spring_jpa.md](Study/Spring/spring_jpa.md) | JPA 의 개념, 동작 원리, 주의 사항 |
 | [spring_dto.md](Study/Spring/spring_dto.md) | DTO 개념 및 설계 시 주의점 |
 | [spring_persistence_context.md](Study/Spring/spring_persistence_context.md) | 스프링 영속성 컨텍스트의 개념과 역할 |
 | [spring_java_class.md](Study/Spring/spring_java_class.md) | Java Class 구조 및 특징 |
