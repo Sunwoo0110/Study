@@ -10,8 +10,8 @@
   - [📚 Study](#-study)
     - [⚒️ Backend](#️-backend)
     - [💾 DB](#-db)
-    - [🖥️ OS](#️-os)
     - [🌱 Spring](#-spring)
+    - [🖥️ OS](#️-os)
   - [🐞 Troubleshooting](#-troubleshooting)
 
 ---
@@ -25,6 +25,7 @@
 | [backend_message_queue.md](Study/Backend/backend_message_queue.md) | 메세지 큐의 개념과 메세지 전송 보장 방식, Kafka의 메세지 처리 흐름, 개발 시 고민 사항, 배치 + 스케줄러와의 사용 방법 |
 | [backend_scaleout.md](Study/Backend/backend_scaleout.md) | 시스템 규모 확장을 위한 기법 정리 |
 | [backend_zero_downtime_deployment.md](Study/Backend/backend_zero_downtime_deployment.md) | 무중단 배포의 필요성과 기법, 실제 도입 사례 정리 |
+| [backend_incident_perf_handling.md](Study/Backend/backend_incident_perf_handling.md) | 서비스 장애 원인 분석 및 해결, 장애 모니터링 사례 정리 |
 | [backend_mvc_pattern.md](Study/Backend/backend_mvc_pattern.md) | MVC 패턴의 개념 및 장단점과 Spring에서의 작동 방식 |
 
 
@@ -33,6 +34,18 @@
 | 파일 | 설명 |
 | --- | --- |
 | [DB_transaction.md](Study/DB/DB_transaction.md) | MySQL의 Lock, Transaction, Isolation level, Propagation, Spring의 `Transactional`, 분산 환경에서의 보상 트랜잭션 정리 |
+
+### 🌱 Spring
+
+| 파일 | 설명 |
+| --- | --------- |
+| [spring_entity.md](Study/Spring/spring_entity.md) | Entity 개념 및 설계 시 주의점 |
+| [spring_dto.md](Study/Spring/spring_dto.md) | DTO 개념 및 설계 시 주의점 |
+| [spring_persistence_context.md](Study/Spring/spring_persistence_context.md) | 스프링 영속성 컨텍스트의 개념과 역할 |
+| [spring_java_class.md](Study/Spring/spring_java_class.md) | Java Class 구조 및 특징 |
+| [spring_security_jwt.md](Study/Spring/spring_security_jwt.md) | Spring Security + JWT 인증 구현/이론 |
+| [spring_bean.md](Study/Spring/spring_bean.md) | Spring container와 bean 개념, 생명주기 |
+| [spring_annotation.md](Study/Spring/spring_annotation.md) | Spring 주요 Annotation 개념/예제 정리 |
 
 ### 🖥️ OS
 
@@ -46,18 +59,6 @@
 | [os_deadlock.md](Study/OS/os_deadlock.md) | 데드락의 발생 조건과 방지, 회피, 감지 방법  |
 | [os_main_memory.md](Study/OS/os_main_memory.md) | 메모리 할당 방식과 페이징 기반 주소 변환 |
 | [os_virtual_memory.md](Study/OS/os_virtual_memory.md) | 가상 메모리의 page fault와 페이지 교체 알고리즘 |
-
-### 🌱 Spring
-
-| 파일 | 설명 |
-| --- | --------- |
-| [spring_entity.md](Study/Spring/spring_entity.md) | Entity 개념 및 설계 시 주의점 |
-| [spring_dto.md](Study/Spring/spring_dto.md) | DTO 개념 및 설계 시 주의점 |
-| [spring_persistence_context.md](Study/Spring/spring_persistence_context.md) | 스프링 영속성 컨텍스트의 개념과 역할 |
-| [spring_java_class.md](Study/Spring/spring_java_class.md) | Java Class 구조 및 특징 |
-| [spring_security_jwt.md](Study/Spring/spring_security_jwt.md) | Spring Security + JWT 인증 구현/이론 |
-| [spring_bean.md](Study/Spring/spring_bean.md) | Spring container와 bean 개념, 생명주기 |
-| [spring_annotation.md](Study/Spring/spring_annotation.md) | Spring 주요 Annotation 개념/예제 정리 |
 
 ---
 
