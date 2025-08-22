@@ -34,6 +34,7 @@
 | 파일 | 설명 |
 | --- | --- |
 | [DB_transaction.md](Study/DB/DB_transaction.md) | MySQL의 Lock, Transaction, Isolation level, Propagation, Spring의 `Transactional`, 분산 환경에서의 보상 트랜잭션 정리 |
+| [DB_mysql_vs_mongodb.md](Study/DB/DB_mysql_vs_mongodb.md) | MySQL 과 MongoDB를 성능, 확장성, 속도, 데이터 정합성 등의 측면에서 비교 분석 정리 |
 
 ### 🌱 Spring
 
