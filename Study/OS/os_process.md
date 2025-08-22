@@ -218,11 +218,52 @@
   - `Socket`: connection-oriented(TCP)
   - `DatagramSocket`: connectionless(UDP)
 
+---
+
+### Python `async def` vs Multiprocessing
+- **Multiprocessing (멀티프로세싱)**
+  - 운영체제가 여러 **CPU Core**를 활용해 프로세스를 병렬 실행하는 것
+  - Python에서는 `multiprocessing` 모듈로 프로세스를 여러 개 띄워 CPU-bound 작업(예: 이미지 처리, 대규모 연산)을 병렬 처리
+  - 각 프로세스는 독립된 메모리 공간을 가지므로 IPC(파이프, 큐)로 데이터 교환 필요
+  - 장점: GIL(Global Interpreter Lock) 제약 없음 -> CPU 병렬 처리(CPU bound) OK
+  - 단점: 프로세스 생성/통신 오버헤드가 큼
+- **Async (비동기, 이벤트 루프 기반)**
+  - `async def`, `await` 키워드를 이용해 **동시성(Concurrency)** 지원
+  - 한 스레드/프로세스 안에서 I/O 대기(네트워크, DB 쿼리 등) 동안 다른 작업 실행
+  - 한 개의 스레드, 한 개의 프로세스에서 동작
+  - 동시에 실행되는 것처럼 보이는건 사실 작업을 잘게 쪼개서 I/O 대기 시간 동안 다른 작업을 처리
+  - **I/O-bound 작업에 효율적**
+  - 장점: 스레드/프로세스 추가 생성 없이도 수천 개 동시 연결 처리 가능
+  - 단점: CPU-bound 작업에는 효과 없음 (여전히 GIL 영향 받음)
+
+---
+
+### 비동기 (Asynchronous) (Async / Event Loop)
+- 요청한 작업이 완료될 때까지 기다리지 않고, 다른 작업을 병렬처럼 진행하는 방식
+- Python asyncio는 이벤트 루프(Event Loop) 기반으로 동작 -> 한 스레드 안에서 코루틴(coroutine)을 번갈아 실행
+- 이벤트 루프 동작 방식
+  - 코루틴(async def) 등록 -> Task로 래핑
+  - 이벤트 루프가 실행되며 대기 상태(I/O Wait) 코루틴을 일시 정지
+  - 그 시간에 다른 코루틴 실행 -> CPU가 놀지 않음
+  - 완료 시점에 다시 이벤트 루프로 돌아와 콜백 실행
+- 장점
+  - **높은 동시성 처리**: 수천 개 네트워크 연결도 한 스레드에서 관리 가능
+  - 스레드/프로세스 오버헤드 감소: context switching 비용 적음
+  - 자원 효율성: 메모리, CPU 소비 최소화
+- 한계
+  - CPU-bound 작업엔 부적합 -> GIL(Global Interpreter Lock) 때문에 한 번에 하나의 바이트코드만 실행
+    - 해결 방법: 멀티프로세싱 + Async 혼합 사용
+  - 코드 복잡도 증가
+    - 모든 호출부에 await 필요 -> 동기/비동기 코드 혼합 시 버그 가능성
+  - 디버깅 난이도 높음
+    - 호출 스택이 코루틴 단위로 끊어지므로 추적 어려움
 
 ---
 
 ## 3. 참고/추가 자료 (References)
 - [인프런 운영체제 공룡책 강의](https://www.inflearn.com/course/%EC%9A%B4%EC%98%81%EC%B2%B4%EC%A0%9C-%EA%B3%B5%EB%A3%A1%EC%B1%85-%EC%A0%84%EA%B3%B5%EA%B0%95%EC%9D%98)
+- [Python - asyncio](https://docs.python.org/3/library/asyncio.html)
+* [Python – multiprocessing](https://docs.python.org/3/library/multiprocessing.html)
 
 ---
 
