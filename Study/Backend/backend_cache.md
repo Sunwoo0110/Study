@@ -14,6 +14,12 @@
     - [Cache Strategy(캐시 전략)](#cache-strategy캐시-전략)
     - [Cache Eviction(캐시 축출)](#cache-eviction캐시-축출)
     - [캐시 사용 시 주의할 점](#캐시-사용-시-주의할-점)
+    - [캐시 정합성 보장 방법](#캐시-정합성-보장-방법)
+      - [Invalidate \& Reload](#invalidate--reload)
+      - [Versioning](#versioning)
+      - [Stale-While-Revalidate (SWR)](#stale-while-revalidate-swr)
+      - [Event-driven Invalidation](#event-driven-invalidation)
+      - [Circuit Breaker with Fallback](#circuit-breaker-with-fallback)
     - [캐시를 사용해도 DB 부하가 발생하는 상황](#캐시를-사용해도-db-부하가-발생하는-상황)
       - [Cache Stampede (캐시 쇄도)](#cache-stampede-캐시-쇄도)
       - [Cache Penetration (캐시 관통)](#cache-penetration-캐시-관통)
@@ -151,6 +157,39 @@
 - **캐시 메모리**는 얼마나 크게 잡을까?
   - 메모리가 너무 작으면 데이터가 자주 캐시에서 밀려남(eviction) -> 성능 저하
   - 캐시 메모리를 과할당(overprovision) -> 캐시 보관 데이터가 갑자기 증가할 때 문제 방지
+
+---
+
+### 캐시 정합성 보장 방법
+- 데이터 정합성이 깨지거나 캐시가 잘못된 값을 반환할 수 있는 상황 대비 필요
+
+
+#### Invalidate & Reload
+- DB 원본 변경/오류 감지 시 -> 캐시 즉시 삭제
+- 이후 첫 요청에서 DB 재조회 후 캐시 재구축
+- 단점: 첫 요청이 느려짐
+
+#### Versioning
+- 캐시 키에 버전 태그 포함 (user:123:v2)
+- DB 업데이트 시 버전 증가 -> 오래된 캐시는 자동 무효화
+- 장점: 강제적인 데이터 정합성 확보
+- 단점: 캐시 메모리 증가 가능
+
+#### Stale-While-Revalidate (SWR)
+- 만료된 데이터라도 잠시 제공 -> 사용자 경험 지연 최소화
+- 동시에 백그라운드에서 최신 DB 값으로 캐시 갱신
+- 장점: 사용자 응답 속도 보장
+- 단점: 최신성이 약간 희생됨
+
+#### Event-driven Invalidation
+- DB 트랜잭션 commit 후 -> 이벤트 발행 (Kafka, RabbitMQ 등)
+- 이벤트 consumer가 캐시 무효화 실행
+- 장점: DB 변경과 캐시 무효화 순서를 보장 가능
+
+#### Circuit Breaker with Fallback
+- 캐시 무효화 실패 시 -> Circuit 열어 Redis 접근 막고, DB 직접 조회
+- 장점: 정합성 확보
+- 단점: 디비 부하가 커짐
 
 ---
 
