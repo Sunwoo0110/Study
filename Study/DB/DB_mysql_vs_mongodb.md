@@ -1,11 +1,11 @@
 
-# 📚 `DB_mysql_vs_mongodb.md`
+# 📚 Mysql vs MongoDB
 
 ## 1. 주제/키워드
 - MySQL (RDBMS) vs MongoDB (NoSQL) 에 대해 비교해보자~~ ヾ(＠⌒ー⌒＠)ノ 
 
 ## 📑 목차
-- [📚 `DB_mysql_vs_mongodb.md`](#-db_mysql_vs_mongodbmd)
+- [📚 Mysql vs MongoDB](#-mysql-vs-mongodb)
   - [1. 주제/키워드](#1-주제키워드)
   - [📑 목차](#-목차)
   - [2. 핵심 요약 (Summary)](#2-핵심-요약-summary)
