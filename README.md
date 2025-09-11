@@ -73,3 +73,4 @@
 |[Java에서_Integer와_int_차이.md](Troubleshooting/Java에서_Integer와_int_차이.md)| Java에서 기본형과 참조형의 차이 | Java |
 |[Spring_type_unboxing.md](Troubleshooting/Spring_type_unboxing.md)| NPE 발생: 타입 언박싱 오류 | Spring |
 |[Long_type.md](Troubleshooting/Long_type.md)| Long 타입 vs Int 타입| Algorithm |
+|[Flyway_도입_문제.md](Troubleshooting/Flyway_도입_문제.md)| Flyway 도입 시 발생한 문제 해결 | Spring |
