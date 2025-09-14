@@ -33,10 +33,10 @@
 
 | 파일 | 설명 |
 | --- | --- |
-| [DB_transaction.md](Study/DB/DB_transaction.md) | MySQL의 Lock, Transaction, Isolation level, Propagation, Spring의 `Transactional`, 분산 환경에서의 보상 트랜잭션 정리 |
-| [DB_index.md](Study/DB/DB_index.md) | 인덱스 개념과 분류, B-Tree 성능 요인과 주요 스캔 방식, 멀티 컬럼 인덱스, 클러스터링 인덱스, 유니크 인덱스, 외래 키 |
-| [DB_mysql_vs_mongodb.md](Study/DB/DB_mysql_vs_mongodb.md) | MySQL 과 MongoDB를 성능, 확장성, 속도, 데이터 정합성 등의 측면에서 비교 분석 정리 |
-| [DB_normalization.md](Study/DB/DB_normalization.md) | 정규화 개념, 과정, 필요성, 비정규화 장점 |
+| [db_transaction.md](Study/DB/db_transaction.md) | MySQL의 Lock, Transaction, Isolation level, Propagation, Spring의 `Transactional`, 분산 환경에서의 보상 트랜잭션 정리 |
+| [db_index.md](Study/DB/db_index.md) | 인덱스 개념과 분류, B-Tree 성능 요인과 주요 스캔 방식, 멀티 컬럼 인덱스, 클러스터링 인덱스, 유니크 인덱스, 외래 키 |
+| [db_mysql_vs_mongodb.md](Study/DB/db_mysql_vs_mongodb.md) | MySQL 과 MongoDB를 성능, 확장성, 속도, 데이터 정합성 등의 측면에서 비교 분석 정리 |
+| [db_normalization.md](Study/DB/db_normalization.md) | 정규화 개념, 과정, 필요성, 비정규화 장점 |
 
 ### 🌱 Spring
 
