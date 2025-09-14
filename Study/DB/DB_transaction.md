@@ -33,6 +33,16 @@
     - [분산 환경에서의 트랜잭션 (보상 트랜잭션)](#분산-환경에서의-트랜잭션-보상-트랜잭션)
       - [Saga 패턴 방식](#saga-패턴-방식)
       - [보상 트랜잭션 구현 사례 (토스뱅크 환전)](#보상-트랜잭션-구현-사례-토스뱅크-환전)
+    - [스터디 질문 정리](#스터디-질문-정리)
+      - [메타데이터 락이 필요한 예시를 설명해주세요](#메타데이터-락이-필요한-예시를-설명해주세요)
+      - [레코드락만으로는 repeatable read 트랜잭션을 보장하지 못하는 이유를 설명해주세요. 그리고 해결방법을 설명하세요](#레코드락만으로는-repeatable-read-트랜잭션을-보장하지-못하는-이유를-설명해주세요-그리고-해결방법을-설명하세요)
+      - [phantom read에서는 왜 non-repeatable read에서 했던 것처럼 트랜잭션id 기반으로 해결할 수 없을까요?](#phantom-read에서는-왜-non-repeatable-read에서-했던-것처럼-트랜잭션id-기반으로-해결할-수-없을까요)
+      - [인덱스가 적절히 준비돼있지 않을 때 lock의 동작을 예시와 함께 설명하세요](#인덱스가-적절히-준비돼있지-않을-때-lock의-동작을-예시와-함께-설명하세요)
+      - [레코드 3이 이미 db에 있는 경우 각각의 결과가 어떻게 나올지 설명하세요](#레코드-3이-이미-db에-있는-경우-각각의-결과가-어떻게-나올지-설명하세요)
+      - [MDL(Metadata Lock) 때문에 DDL이 멈출 수 있습니다. 왜, 어떻게 피하나요?](#mdlmetadata-lock-때문에-ddl이-멈출-수-있습니다-왜-어떻게-피하나요)
+      - [Gap Lock이 불필요하게 성능을 저하시키는 사례는 언제 발생할까요? 이를 줄이는 전략은?](#gap-lock이-불필요하게-성능을-저하시키는-사례는-언제-발생할까요-이를-줄이는-전략은)
+      - [MySQL에서 Serializable 격리 수준과 Repeatable Read + Next-Key Lock은 어떤 차이가 있나요? Serializable을 실제 서비스에서 쓰지 않는 이유는? 그럼에도 실제 서비스에서 쓰는 경우는? (트레이드오프 관점에서)](#mysql에서-serializable-격리-수준과-repeatable-read--next-key-lock은-어떤-차이가-있나요-serializable을-실제-서비스에서-쓰지-않는-이유는-그럼에도-실제-서비스에서-쓰는-경우는-트레이드오프-관점에서)
+      - [읽기 전용 트랜잭션도 너무 오래 유지되면 어떤 문제가 발생할까요?](#읽기-전용-트랜잭션도-너무-오래-유지되면-어떤-문제가-발생할까요)
   - [3. 참고/추가 자료 (References)](#3-참고추가-자료-references)
   - [4. 내일/다음에 볼 것 (Next Steps)](#4-내일다음에-볼-것-next-steps)
 
@@ -147,6 +157,14 @@
 - 주의사항
   - 긴 쿼리(특히 오래 걸리는 SELECT)가 실행 중인 상태에서 DDL 실행하면, DDL이 MDL 획득 대기 상태로 멈춰버림
   - 이런 상황은 MySQL 서버 운영에서 자주 장애 원인이 되므로, 운영 중에는 DDL 실행 시각 조정이 중요
+- DDL (Data Definition Language)
+  - DB의 구조(스키마, 테이블, 인덱스 등)를 정의, 수정하는 명령어
+  - 대표 명령어: CREATE, ALTER, DROP, TRUNCATE
+  - 특징: 실행 즉시 반영되고 자동 COMMIT, 되돌릴 수 없음
+- DML (Data Manipulation Language)
+  - DB에 저장된 데이터를 조작(조회, 삽입, 수정, 삭제)하는 명령어
+  - 대표 명령어: SELECT, INSERT, UPDATE, DELETE
+  - 특징: 트랜잭션 내에서 실행 -> COMMIT/ROLLBACK 가능
 
 ---
 
@@ -512,6 +530,53 @@ public class MemberService {
   - 분산 환경에서 트랜잭션을 완벽히 ACID로 보장하기는 어려움
   - 따라서 **보상 트랜잭션 + 결과적 정합성**(Eventual Consistency)을 수용
   - 토스뱅크 환전 서비스는 Saga 패턴(Orchestration) 을 도입해 높은 트래픽, 확장성 속에서도 안정적인 정합성을 유지함!
+
+---
+
+### 스터디 질문 정리
+#### 메타데이터 락이 필요한 예시를 설명해주세요
+- 테이블 구조를 바꾸는 DDL과 DML이 동시에 실행되면 충돌이 발생할 수 있음 -> 락으로 방지
+- ex. ALTER TABLE 중에 다른 세션에서 SELECT/INSERT 실행 시, MDL이 충돌 방지해줌
+- DDL은 배타락, DML은 공유락을 획득하여 일관성을 보장
+
+#### 레코드락만으로는 repeatable read 트랜잭션을 보장하지 못하는 이유를 설명해주세요. 그리고 해결방법을 설명하세요
+- Row Lock은 기존 레코드만 보호해 새로운 레코드 삽입은 막지 못함. 따라서 동일 조건으로 다시 SELECT하면 새 레코드가 보이는 팬텀 리드 발생
+- InnoDB는 Gap Lock/Next-Key Lock으로 범위까지 잠가 Repeatable Read를 보장
+
+#### phantom read에서는 왜 non-repeatable read에서 했던 것처럼 트랜잭션id 기반으로 해결할 수 없을까요?
+- Non-repeatable read는 Undo를 통한 버전 관리로 해결 가능. 하지만 팬텀 리드는“존재하지 않던 새로운 레코드 문제라 Undo에 정보가 없음. 따라서 범위를 잠그는 Next-Key Lock이 필요
+
+#### 인덱스가 적절히 준비돼있지 않을 때 lock의 동작을 예시와 함께 설명하세요
+- 인덱스 없는 WHERE 조건 UPDATE/DELETE는 풀 스캔 수행
+- 이 경우 InnoDB는 조건에 맞는 모든 레코드 탐색 중 테이블 전반에 Row/GAP Lock을 설정 ->
+결과적으로 락 범위 과도하게 확대 -> 성능 저하, Deadlock 가능성 증가
+
+#### 레코드 3이 이미 db에 있는 경우 각각의 결과가 어떻게 나올지 설명하세요
+`INSERT INTO tab_myisam (fdpk) VALUES (1),(2),(3) - MyISAM
+INSERT INTO tab_innodb (fdpk) VALUES (1),(2),(3) - InnoDB`
+- MyISAM: 중복 PK 발생 시 에러 -> 전체 쿼리 실패, 아무것도 삽입 안 됨
+- InnoDB: 트랜잭션 단위로 처리 -> (1,2)는 삽입 성공, (3)에서 Duplicate Key Error
+
+#### MDL(Metadata Lock) 때문에 DDL이 멈출 수 있습니다. 왜, 어떻게 피하나요?
+- 긴 SELECT가 MDL 공유락 유지 -> DDL(ALTER)은 배타락을 못 얻어 무기한 대기
+- 해결책: 트랜잭션 최소화, 신규 테이블 생성 후 RENAME 교체, 배포 시간 조정
+
+#### Gap Lock이 불필요하게 성능을 저하시키는 사례는 언제 발생할까요? 이를 줄이는 전략은?
+- 인덱스 없는 범위 UPDATE/SELECT FOR UPDATE 시 광범위 Gap Lock 발생 -> 결과적으로 불필요한 경합/락 대기 증가
+- 해결: 인덱스 최적화, 범위 쿼리 최소화, 불필요한 SELECT FOR UPDATE 지양
+
+#### MySQL에서 Serializable 격리 수준과 Repeatable Read + Next-Key Lock은 어떤 차이가 있나요? Serializable을 실제 서비스에서 쓰지 않는 이유는? 그럼에도 실제 서비스에서 쓰는 경우는? (트레이드오프 관점에서)
+- Repeatable Read + Next-Key: 같은 트랜잭션 안에서 같은 SELECT는 항상 같은 결과 보장. 새 데이터 삽입을 막기 위해 Next-Key Lock(행+갭)을 사용 -> 팬텀 대부분 방지 + 성능 유지
+- Serializable: 모든 SELECT도 자동으로 락을 걸어버림 -> 동시성이 크게 떨어짐
+- 실서비스에선 동시성이 더 중요해 잘 안 씀
+- 금융/통계처럼 **정합성**이 100% 필요한 경우에는 사용 -> 은행 원장 마감, 월말 결산 집계, 회계/세금 신고용 데이터 생성
+
+#### 읽기 전용 트랜잭션도 너무 오래 유지되면 어떤 문제가 발생할까요?
+- 읽기 전용: DB 변경은 못 하고, 트랜잭션 시작 시점의 스냅샷을 계속 읽음
+- 스냅샷을 오래 잡고 있어 Undo 공간을 계속 사용 -> 정리 지연 + 공간 낭비
+- MDL 공유락을 계속 쥐고 있어 다른 DDL이 막힘
+- DB 커넥션이 묶여서 다른 요청이 지연
+- 오래된 데이터만 계속 보여줄 위험
 
 ---
 
