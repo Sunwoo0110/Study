@@ -212,6 +212,7 @@
 - `READ COMMITED`
   - **commit이 완료된 데이터만** 다른 트랜잭션에서 조회 가능 -> Dirty Read 없음
   - **트랜잭션 내에서 같은 쿼리라도 여러 번 실행하면 다른 결과**가 나올 수 있음 (Non-repeatable Read 발생 가능)
+  - Non-repeatable Read: 같은 행(Row)을 두 번 읽었는데 값이 달라짐(UPDATE/DELETE 문제)
   - 각 SELECT 시점마다 새로운 Read View 생성
   - 이러한 문제는 하나의 트랜잭션에 동일 데이터에 여러 번 접근하는 금융 시스템에서 위험할 수 있음
   - **Oracle 기본**
@@ -228,6 +229,7 @@
   - 모든 InnoDB의 트랜잭션은 고유한 순차적으로 증가하는 트랜잭션 번호를 가지고 있고, undo 백업 레코드에는 변경을 발생시킨 트랜잭션 번호를 포함함
   - `READ COMMITTED`는 매 SELECT마다 최신 커밋된 버전을 반환하고, `REPEATABLE READ`는 **트랜잭션 시작 시점의 스냅샷 버전을 끝까지 유지**
   - 팬텀 리드를 방지하기 위해 Next-Key Lock (Record Lock + Gap Lock) 사용
+  - Phantom Read: 같은 조건으로 두 번 조회했는데 행(Row)의 개수가 달라짐(INSERT/DELETE 문제)
   - **MySQL/InnoDB 기본**
   - 사용 예시
     - 금융/계정 잔액 조회
@@ -248,7 +250,7 @@
 | ---------------- | ---------- | ------------------- | ------------ | -------- | ---------------- | ------------- |
 | READ UNCOMMITTED | 가능         | 가능                  | 가능           | 작동 안 함   | 최신 버전만 읽음        | 가장 낮은 격리 수준   |
 | READ COMMITTED   | 불가         | 가능                  | 가능           | 작동       | 매 SELECT마다 스냅샷   | 커밋된 데이터만 읽기   |
-| REPEATABLE READ  | 불가         | 불가                  | 불가능          | 최고       | Next-Key Lock 사용 | 기본, 일관된 읽기 보장 |
+| REPEATABLE READ  | 불가         | 불가                  | 가능           | 최고       | Next-Key Lock 사용 시 팬텀 리드 방지 가능 | 기본, 일관된 읽기 보장 |
 | SERIALIZABLE     | 불가         | 불가                  | 불가능          | 작동       | Shared 락 강화      | 가장 안전하지만 느림   |
 
 
@@ -544,7 +546,24 @@ public class MemberService {
 - InnoDB는 Gap Lock/Next-Key Lock으로 범위까지 잠가 Repeatable Read를 보장
 
 #### phantom read에서는 왜 non-repeatable read에서 했던 것처럼 트랜잭션id 기반으로 해결할 수 없을까요?
-- Non-repeatable read는 Undo를 통한 버전 관리로 해결 가능. 하지만 팬텀 리드는“존재하지 않던 새로운 레코드 문제라 Undo에 정보가 없음. 따라서 범위를 잠그는 Next-Key Lock이 필요
+- **순수 select는 스냅샷 고정 + undo log, 락 기반 select(update)는 레코드에 직접 락**(현재 커밋된 최신 레코드를 읽음)
+- 따라서 처음 select 와 두번째 select 사이 새로운 insert 가 발생 시 커밋된 최신 레코드를 읽는다고 생각하면 팬텀리드가 발생
+- Non-Repeatable Read는 왜 Undo Log(MVCC)로 해결 가능?
+  - non-repeatable read 문제: 같은 행을 두 번 읽었는데, 중간에 다른 트랜잭션이 UPDATE/DELETE 해서 값이 달라지는 경우
+  - InnoDB는 **트랜잭션 시작 시점의 Read View**(트랜잭션 ID 기반 스냅샷)을 유지해서, 두 번째 SELECT도 그 시점의 undo log 버전을 재구성해서 보여줌
+- Phantom Read는 왜 Undo Log만으로 안 막히나?
+  - phantom read 문제: 같은 조건으로 두 번 조회했는데, 중간에 다른 트랜잭션이 새 행을 INSERT/DELETE해서 결과 행 개수 자체가 달라지는 경우
+  - undo log는 기존 행의 과거 버전만 복원해 줄 뿐, 새로운 행에 대해서는 보장 못함
+- Lock 기반 select에서 팬텀 리드 발생하는 경우
+  - `SELECT * FROM user WHERE age > 20 FOR UPDATE;`
+  - 현재 있는 행들엔 락이 걸림
+  - 하지만 다른 트랜잭션이 age=25짜리 새로운 행을 INSERT하면?
+  - 인덱스 범위에 락이 없으면 새로운 행은 삽입 가능
+  - 따라서 같은 조건으로 다시 SELECT하면, 그 행이 새로 보임 -> 팬텀리드
+  - 이를 방지하기 위해 넥스트키 락을 걸음
+- 팬텀 리드
+  - 삽입(Insert): 조건을 만족하는 새로운 행이 중간에 추가됨 -> 다시 조회하면 행 개수가 달라짐
+  - 삭제(Delete): 조건을 만족하는 행이 중간에 삭제됨 -> 처음보다 결과가 줄어들어 팬텀 현상
 
 #### 인덱스가 적절히 준비돼있지 않을 때 lock의 동작을 예시와 함께 설명하세요
 - 인덱스 없는 WHERE 조건 UPDATE/DELETE는 풀 스캔 수행
@@ -554,19 +573,20 @@ public class MemberService {
 #### 레코드 3이 이미 db에 있는 경우 각각의 결과가 어떻게 나올지 설명하세요
 `INSERT INTO tab_myisam (fdpk) VALUES (1),(2),(3) - MyISAM
 INSERT INTO tab_innodb (fdpk) VALUES (1),(2),(3) - InnoDB`
-- MyISAM: 중복 PK 발생 시 에러 -> 전체 쿼리 실패, 아무것도 삽입 안 됨
-- InnoDB: 트랜잭션 단위로 처리 -> (1,2)는 삽입 성공, (3)에서 Duplicate Key Error
+- MyISAM: 트랜잭션 자체가 없으므로 -> 에러 발생 시에도 부분적으로 들어간 상태가 남을 수 있음 -> 1, 2 들어감 3 안들어감
+- InnoDB: 트랜잭션 엔진 -> 에러가 나면 해당 문 전체를 rollback -> 1, 2 다 안들어감
 
 #### MDL(Metadata Lock) 때문에 DDL이 멈출 수 있습니다. 왜, 어떻게 피하나요?
 - 긴 SELECT가 MDL 공유락 유지 -> DDL(ALTER)은 배타락을 못 얻어 무기한 대기
 - 해결책: 트랜잭션 최소화, 신규 테이블 생성 후 RENAME 교체, 배포 시간 조정
 
 #### Gap Lock이 불필요하게 성능을 저하시키는 사례는 언제 발생할까요? 이를 줄이는 전략은?
-- 인덱스 없는 범위 UPDATE/SELECT FOR UPDATE 시 광범위 Gap Lock 발생 -> 결과적으로 불필요한 경합/락 대기 증가
-- 해결: 인덱스 최적화, 범위 쿼리 최소화, 불필요한 SELECT FOR UPDATE 지양
+- Gap Lock: SELECT ... FOR UPDATE / SELECT ... LOCK IN SHARE MODE / UPDATE / DELETE 등 레코드 잠금이 필요한 쿼리에서 사용, 조건에 맞는 레코드뿐 아니라 그 사이의 갭까지 잠가서 새로운 INSERT를 막음
+- 해당 범위 안의 레코드뿐 아니라, 사이 gap까지 잠겨서 새로운 INSERT 차단
+- 해결: 인덱스 최적화, 범위 쿼리 최소화, 격리 수준 낮추기
 
 #### MySQL에서 Serializable 격리 수준과 Repeatable Read + Next-Key Lock은 어떤 차이가 있나요? Serializable을 실제 서비스에서 쓰지 않는 이유는? 그럼에도 실제 서비스에서 쓰는 경우는? (트레이드오프 관점에서)
-- Repeatable Read + Next-Key: 같은 트랜잭션 안에서 같은 SELECT는 항상 같은 결과 보장. 새 데이터 삽입을 막기 위해 Next-Key Lock(행+갭)을 사용 -> 팬텀 대부분 방지 + 성능 유지
+- Repeatable Read + Next-Key lock: 같은 트랜잭션 안에서 같은 SELECT는 항상 같은 결과 보장. 새 데이터 삽입을 막기 위해 Next-Key Lock(행+갭)을 사용 -> 팬텀 대부분 방지 + 성능 유지
 - Serializable: 모든 SELECT도 자동으로 락을 걸어버림 -> 동시성이 크게 떨어짐
 - 실서비스에선 동시성이 더 중요해 잘 안 씀
 - 금융/통계처럼 **정합성**이 100% 필요한 경우에는 사용 -> 은행 원장 마감, 월말 결산 집계, 회계/세금 신고용 데이터 생성

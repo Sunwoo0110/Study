@@ -151,7 +151,9 @@
 ### 스터디 질문 정리
 #### 스핀락의 단점을 설명하고 어떤 방식으로 개선할 수 있을 지 설명하세요
 - 단점: 락 대기 중 CPU를 낭비하며 Busy Wait
-- 개선: 짧은 임계 구역에만 사용, 일정 시간 후 Sleep으로 전환(Hybrid Lock)
+- 개선
+  - spin 동안 다른 스레드에게 CPU 양보 -> context switch 비용, starvation 문제
+  - lock 획득 못하면 sleep 했다가 lock 가진 스레드가 unlock 호출 시 특정 스레드를 깨워줌
 - 멀티코어 환경에서 유리, 단일코어 환경에서는 비효율적
 
 #### 식사하는 철학자 문제를 해결할 방법을 2개 이상 설명해보세요
@@ -165,7 +167,7 @@
 - 회피: Banker's Algorithm으로 안전 순서만 허용
 
 #### 세마포어가 수행할 수 있는 역할을 설명하고 값을 어떻게 세팅해야하는지 말하세요
-- 역할: 임계 구역 동기화, 다중 자원 접근 제어
+- 역할: 임계 구역 동기화(상호 배제 + 스레드 실행 순서 관리), 다중 자원 접근 제어(스레드 개수 제어)
 - Binary Semaphore(0/1): Mutex처럼 동작
 - Counting Semaphore(n): n개의 자원을 동시에 허용
 
@@ -177,15 +179,15 @@
 - 결과적으로 지연 분포 악화(p95/p99 높아짐), 전체 처리량 감소
 
 #### TLB Miss가 Context Switching 시 더 많이 발생하는 이유는?
-- TLB는 가상 -> 물리 주소를 캐싱함. 컨텍스트 스위치로 주소 공간이 바뀌면 이전 TLB 엔트리 대부분이 무효화
+- TLB는 가상 -> 물리 주소를 캐싱함. 컨텍스트 스위치로 프로세스가 바뀌면 주소 공간도 바뀌고, 이전 TLB 엔트리 대부분이 무효화
 - 새 프로세스는 초기 접근 때마다 TLB miss -> 페이지 테이블 워크가 발생
 - 이 과정에서 TLB/캐시 지역성이 깨져 지연 발생
 - 따라서 스위치가 자주 발생할 때 TLB miss 누적으로 처리량이 감소
 
 #### 아래의 코드에서 잘못된 부분을 찾고 고칠 방법은? + 잘못 작동하는 예시
 - <img src="image/synchronization/6.png" alt="설명" width="400"/>
-- 단일 cond를 producer/consumer가 공용으로 써서 signal()이 잘못된 쪽을 깨우면 둘 다 while 대기되는 문제(지연 발생)
-- 만약 count=1 인 상황이라고 가정하면 producer은 wait 인 상태인데 만약 스케줄러가 producer을 깨우면 다시 wait로 들어감(단일 cond이기 때문에 producer, consumer 중 누굴 깨울지 구분안함) -> 재 wait로 인한 스위치 낭비, 큐 대기 증가
+- 단일 cond를 producer/consumer가 공용으로 써서 signal()이 잘못된 쪽을 깨우면 둘 다 while 대기되는 문제
+- 만약 count=1 인 상황이라고 가정하면 producer은 wait 인 상태인데 만약 consumer도 wait 상태인데,
 - 수정: 조건변수를 cond_not_empty(소비자용) / cond_not_full(생산자용)으로 분리
 
 ---
