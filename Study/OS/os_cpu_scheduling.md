@@ -14,6 +14,8 @@
 - Ready Queue 속 프로세스를 선택해서 CPU에게 할당
 - 그럼 어떤 기준으로 프로세스를 선택할까?
   - Preemptive(선점형) vs Non-preemptive(비선점형)
+  - Preemptive(선점형): 현대 OS가 주로 사용, 프로세스 중단 후 강제로 다른 프로세스에 CPU 할당
+  - Non-preemptive(비선점형): 프로세스 스스로 CPU 포기, context switching으로 인한 부하가 적음(강제 인터럽트가 없어, 스위칭 횟수가 적기 때문)
 - 언제 CPU scheduling이 작동할까?
   - 빈 CPU에 할당할 프로세스 선택 필요할 때 작동
   - running -> waiting (non-preemptive)
@@ -63,6 +65,7 @@
 - 가장 작은 CPU burst를 가진 프로세스를 선택
 - 2개 이상의 프로세스가 같은 CPU burst라면 FCFS로
 - short process의 waiting time을 줄이면서 average waiting time을 줄임
+- 긴 프로세스가 실행되지 않는 현상(starvation)이 일어날 수 있음
 - 가장 바람직한 알고리즘! 하지만 구현이 어려움(사실상 불가능)
   - 다음 next cpu burst 길이를 알 방법이 없음
   - 따라서 predict 하는 방법을 고안(이전 길이로 exponential average를 구함): SRTF(Shortest Remaining Time First)
@@ -70,6 +73,7 @@
 ### RR Scheduling
 - Round-Robin
 - **Preemptive**
+- 현대 컴퓨터가 많이 사용
 - time quantum을 이용한 preemptive FCFS
 - ready queue를 circular queue로 생각
 - time quantum 씩 잘라서 프로세스 순차적 실행
@@ -78,6 +82,7 @@
 - Time quantum의 크기에 따라 성능이 좌우됨
   - 너무 크면 FCFS와 동일
   - 너무 작으면 context switch가 자주 발생 -> 오버헤드 발생!
+- 로드밸런서의 트래픽 분산 알고리즘으로 사용
 
 ### Priority-base Scheduling
 - 각 프로세스에 priority를 할당하고, 가장 높은 우선순위부터 실행
@@ -93,6 +98,16 @@
 
 ### Multi-Level Queue(MLG) Scheduling
 - 용도/속성(예: interactive, batch 등)에 따라 여러 개의 ready queue를 분리해 관리
+
+### SRF
+- Shortest Remaining Time First
+- **Preemptive**
+- 프롯스 실행 중간에 더 짧은 프로세스가 들어오면, 기존 것을 중지하고 해당 프로세스를 실행
+
+### 다단계 큐
+- **Preemptive**
+- 우선순위에 따른 준비 큐를 여러 개 사용하고, 큐 마다 다른 스케줄링 알고리즘을 적용
+- 큐 간 프로세스 이동이 일어나지 않음 -> 스케줄링 부담이 적지만, 유연성이 떨어짐
 
 ---
 
@@ -154,6 +169,7 @@
 
 ## 3. 참고/추가 자료 (References)
 - [인프런 운영체제 공룡책 강의](https://www.inflearn.com/course/%EC%9A%B4%EC%98%81%EC%B2%B4%EC%A0%9C-%EA%B3%B5%EB%A3%A1%EC%B1%85-%EC%A0%84%EA%B3%B5%EA%B0%95%EC%9D%98)
+- 면접을 위한 CS 전공지식 노트
 
 ---
 
