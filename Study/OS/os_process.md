@@ -15,10 +15,14 @@
   - stack: 함수 파라미터, 리턴 주소, 지역 변수 등
   - heap: 동적 할당 메모리(malloc, new 등)
   - data: 전역/정적 변수
-  - text: 실행 코드(명령어)
+  - text(code): 실행 코드(명령어)
+  - stack과 heap은 동적 할당 (런타임 단계에서 메모리가 할당됨)
+  - data, text는 정적 할당 (컴파일 단계에서 메모리가 할당됨) 
   - <img src="image/process/1.png" alt="설명" width="200"/>
 - Process State(상태)
   - New: 생성 중
+    - fork(), exec()를 통해 생성
+    - PCB가 할당됨
   - Running: 실행(명령어 처리 중)
   - Waiting: I/O 등 이벤트 발생 기다림
   - Ready: CPU 할당 기다림(메모리에 올라가 있는 상태)
@@ -29,6 +33,7 @@
 
 ### PCB(Process Control Block)이란?
 - OS가 각 프로세스를 관리하기 위해 사용하는 자료구조
+- 프로세스에 대한 메타데이터 저장
 - process state, program counter, CPU register, stack pointer 등 실행 컨텍스트 정보 포함
 - <img src="image/process/3.png" alt="설명" width="200"/>
 
@@ -43,10 +48,23 @@
     - 대기 중인 상태에서 PCB 링크드 리스트로 관리됨
   - Wait Queue: 이벤트(I/O, 신호 등)를 기다리는 프로세스 목록
   - <img src="image/process/4.png" alt="설명" width="400"/>
-- **Context Switch**
-  - 현재 실행중인 프로세스의 **context**(상태)를 PCB에 저장
-  - 다른 프로세스의 context를 PCB에서 불러와서 CPU 실행을 전환
-  - 즉, 프로세스 간에 CPU를 바꿔주는 핵심 기술!
+  
+---
+
+### Context Switch
+- 현재 실행중인 프로세스의 **context**(상태)를 PCB에 저장
+- 다른 프로세스의 context를 PCB에서 불러와서 CPU 실행을 전환
+- 즉, 프로세스 간에 CPU를 바꿔주는 핵심 기술!
+- 싱글 코어 기준으로, 특정 시점에서 컴퓨터에 실행되는 프로세스는 1개이며, 다른 프로세스와 context switching 이 빠르게 이루어지기 때문에 여러 프로세스가 동시에 실행되는 것처럼 보이는 것
+- **Cache miss**
+  - Context switching 시 바뀌는 것은 register 값, PC, 스택 포인터, 주소 공간 등
+  - 이때, 캐시는 프로세스 별 관리되는 것이 아닌 **CPU 코어별**
+  - 따라서, 프로세스 A 실행 시 해당 코드, 데이터, 스택 등을 캐시에 올려뒀다가, 스위칭으로 프로세스 B가 실행된다면?
+  - 프로세스 B 입장에서 거의 다 **Cache miss** 가 일어남 -> Cold cache effect, context swich overhead! -> RAM에서 다시 가져와야함
+  - 이게 문제가 되는 이유가, 캐시 무효화 후 다시 RAM에서 찾아오면 TLB miss 도 같이 터질 수 있음 -> 오버해드 증가
+  - 따라서, 멀티 코어에서는 CPU affinity를 통해 캐시 locality를 지킴
+    - 프로세스 A가 코어 0에서 돌다가 1로 가면, 코어 1의 캐시는 A에 대해 완전 콜드 상태이기 때문에 위험 -> 같은 코어에서 스캐줄링
+- Thread에서도 context switching 이 일어남 -> 스택 제외 모든 메모리를 공유하기 때문에, 프로세스보다 비용도 적고 시간도 적게 걸림
 
 --- 
 
@@ -145,7 +163,8 @@
   - Independent: 다른 프로세스의 상태에 전혀 영향받지 않는 프로세스 (데이터도 전혀 공유X)
   - Cooperating: 서로 정보(데이터)를 공유하거나 영향을 주고받는 프로세스
 - IPC(Inter-Process Communication)
-  - 데이터 교환을 허용하는 cooperating process는 IPC mechanism을 필요로 험
+  - 프로세스끼리 데이터를 주고 받고, 공유 데이터를 관리하는 메커니즘
+  - 데이터 교환을 허용하는 cooperating process는 IPC mechanism을 필요로 함
   - 즉, send data, receive data가 필요
   - IPC에는 두 모델이 존재: shared memory, message passing
   - <img src="image/process/6.png" alt="설명" width="400"/>
